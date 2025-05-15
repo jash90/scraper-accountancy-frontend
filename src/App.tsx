@@ -1,5 +1,6 @@
 import React from 'react';
 import { Search, FileText, Clock, Shield } from 'lucide-react';
+import Markdown from 'react-markdown';
 
 function App() {
   const [query, setQuery] = React.useState('');
@@ -7,7 +8,7 @@ function App() {
   const [showFeatures, setShowFeatures] = React.useState(true);
   const [result, setResult] = React.useState<{
     answer: string;
-    source: string;
+    source: string[];
     timestamp: string;
   } | null>(null);
 
@@ -19,7 +20,7 @@ function App() {
     setResult(null);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/ask`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/ask-gpt`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -28,11 +29,12 @@ function App() {
       });
 
       const data = await response.json();
+      console.log(data);
       setResult(data);
     } catch (error) {
       setResult({
         answer: 'Przepraszamy, wystąpił błąd podczas wyszukiwania.',
-        source: '',
+        source: [],
         timestamp: new Date().toISOString()
       });
     } finally {
@@ -125,22 +127,28 @@ function App() {
             <div className="prose max-w-none mb-4">
               {result.answer.split('\n').map((line, i) => (
                 <p key={i} className="mb-4 text-gray-700">
-                  {line}
+                  <Markdown>{line}</Markdown>
                 </p>
               ))}
             </div>
             {result.source && (
               <div className="text-sm text-gray-500 border-t pt-4">
                 <p>
-                  Źródło:{' '}
-                  <a
-                    href={result.source}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
-                  >
-                    {result.source}
-                  </a>
+                  Źródła:{' '}
+                  <ul>
+                  {result.source.map((source) => (
+                    <li>
+                    <a
+                      href={source}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      {`${source} `}
+                    </a>
+                    </li>
+                  ))}
+                  </ul>
                 </p>
                 <p>
                   Data aktualizacji:{' '}
